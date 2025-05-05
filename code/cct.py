@@ -1,6 +1,17 @@
+import pandas as pd
+import pymc as pm
+import arviz as az
+import numpy as np
+import matplotlib.pyplot as plt
+
+
 def load_plant_knowledge_data(filepath):
     df = pd.read_csv(filepath)
-    return df.drop(columns=["InformantID"]).to_numpy()
+    return df.drop(columns=["Informant"]).to_numpy()
+
+
+data = load_plant_knowledge_data("../data/plant_knowledge.csv")
+
 
 def run_cct_model(data):
     N, M = data.shape
@@ -31,8 +42,16 @@ trace = run_cct_model(data)
 print(az.summary(trace, var_names=["D", "Z"]))
 
 # Plots
-az.plot_posterior(trace, var_names=["D"])  # competence
-az.plot_posterior(trace, var_names=["Z"])  # consensus answers
+# temp comment: az.plot_posterior(trace, var_names=["D"])  # competence
+# temp comment: az.plot_posterior(trace, var_names=["Z"])  # consensus answers
+
+# temp comment: fig_d = az.plot_posterior(trace, var_names=["D"], coords={"D_dim_0": list(range(5))})
+# temp comment: fig_d.figure.savefig("posterior_D.png")
+
+# temp comment:fig_z = az.plot_posterior(trace, var_names=["Z"], coords={"Z_dim_0": list(range(5))})
+# temp comment:fig_z.figure.savefig("posterior_Z.png")
+
+
 
 def compute_majority_vote(data):
     return np.round(data.mean(axis=0)).astype(int)
