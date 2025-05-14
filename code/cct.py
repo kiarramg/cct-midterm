@@ -21,7 +21,7 @@ def run_cct_model(data):
     with pm.Model() as cct_model:
         # Priors
         D = pm.Beta("D", alpha=2, beta=2, shape=N)  # Informant competence; favors values in (0.5, 1)
-        Z = pm.Bernoulli("Z", p=0.5, shape=M)       # Consensus answers
+        Z = pm.Bernoulli("Z", p=0.7, shape=M)       # Consensus answers
 
         # Reshape for broadcasting
         D_reshaped = D[:, None]  # shape (N, 1)
