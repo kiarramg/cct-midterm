@@ -3,9 +3,9 @@ import pymc as pm
 import arviz as az
 import numpy as np
 import matplotlib
+matplotlib.use("Agg")  # Use a non-interactive backend that doesn't open windows
 import matplotlib.pyplot as plt
-
-
+import arviz as az
 
 def load_plant_knowledge_data(filepath):
     df = pd.read_csv(filepath)
@@ -40,21 +40,21 @@ def run_cct_model(data):
 
 trace = run_cct_model(data)
 
-# Show convergence diagnostics plot
+# Show convergence diagnostics plot (silently generate, then discard)
 az.plot_trace(trace, var_names=["D", "Z"])
 plt.tight_layout()
-plt.show()  # Instead of saving
+plt.close()
 
 # Summary
 print(az.summary(trace, var_names=["D", "Z"]))
 
-# Plot posterior of informant competence (D)
+# Plot posterior of informant competence (D) (silently)
 az.plot_posterior(trace, var_names=["D"], coords={"D_dim_0": list(range(5))})
-plt.show()  # Show plots instead of saving
+plt.close()
 
-# Plot posterior of consensus answers (Z)
+# Plot posterior of consensus answers (Z) (silently)
 az.plot_posterior(trace, var_names=["Z"], coords={"Z_dim_0": list(range(5))})
-plt.show()  # Show plots instead of saving
+plt.close()
 
 
 def compute_majority_vote(data):
