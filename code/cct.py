@@ -2,7 +2,9 @@ import pandas as pd
 import pymc as pm
 import arviz as az
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
+
 
 
 def load_plant_knowledge_data(filepath):
@@ -38,22 +40,41 @@ def run_cct_model(data):
 
 trace = run_cct_model(data)
 
+# Show convergence diagnostics plot
+az.plot_trace(trace, var_names=["D", "Z"])
+plt.tight_layout()
+plt.show()  # Instead of saving
+
 # Summary
 print(az.summary(trace, var_names=["D", "Z"]))
 
-# Plots
-# temp comment: az.plot_posterior(trace, var_names=["D"])  # competence
-# temp comment: az.plot_posterior(trace, var_names=["Z"])  # consensus answers
+# Plot posterior of informant competence (D)
+az.plot_posterior(trace, var_names=["D"], coords={"D_dim_0": list(range(5))})
+plt.show()  # Show plots instead of saving
 
-# temp comment: fig_d = az.plot_posterior(trace, var_names=["D"], coords={"D_dim_0": list(range(5))})
-# temp comment: fig_d.figure.savefig("posterior_D.png")
-
-# temp comment:fig_z = az.plot_posterior(trace, var_names=["Z"], coords={"Z_dim_0": list(range(5))})
-# temp comment:fig_z.figure.savefig("posterior_Z.png")
-
+# Plot posterior of consensus answers (Z)
+az.plot_posterior(trace, var_names=["Z"], coords={"Z_dim_0": list(range(5))})
+plt.show()  # Show plots instead of saving
 
 
 def compute_majority_vote(data):
     return np.round(data.mean(axis=0)).astype(int)
 
 cct_consensus = (trace.posterior["Z"].mean(dim=["chain", "draw"]) > 0.5).astype(int)
+
+# CHAT 5/13: Identify most and least competent informants
+competence_means = trace.posterior["D"].mean(dim=["chain", "draw"]).values
+most_competent = np.argmax(competence_means)
+least_competent = np.argmin(competence_means)
+print(f"Most competent: Informant {most_competent}, Score: {competence_means[most_competent]:.2f}")
+print(f"Least competent: Informant {least_competent}, Score: {competence_means[least_competent]:.2f}")
+
+# CHAT 5/13: Compare CCT consensus with majority vote
+majority_vote = compute_majority_vote(data)
+differences = (cct_consensus.values != majority_vote).sum()
+print(f"Differences between CCT model and majority vote: {differences}")
+
+# CHAT 5/13: print("\n--- Summary ---")
+print("The CCT model estimated informant competence and consensus answers using Bayesian inference.")
+print("We found the most competent informant was", most_competent, "with a competence of", round(competence_means[most_competent], 2))
+print("The consensus answer key differed from the naive majority vote on", differences, "out of", data.shape[1], "items.")
